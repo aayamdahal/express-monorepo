@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Register Form</title>
+    <script>
+      function submitForm() {
+        var email = document.getElementById("email").value;
+        var password = document.getElementById("password").value;
+
+        // Create the request body
+        var requestBody = {
+          email: email,
+          password: password,
+        };
+
+        // Make the API call
+        fetch("http://localhost:8181/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        })
+          .then((response) => {
+            if (response.ok) {
+              alert(`${response.status} ${response.message}`);
+            } else {
+              alert(`${response.status} ${response.message}`);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("An error occurred during registration.");
+          });
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Register</h1>
+    <form onsubmit="event.preventDefault(); submitForm();">
+      <label for="email">Email:</label>
+      <input type="email" id="email" required />
+      <br />
+      <label for="password">Password:</label>
+      <input type="password" id="password" required />
+      <br />
+      <input type="submit" value="Register" />
+    </form>
+  </body>
+</html>
