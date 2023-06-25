@@ -1,56 +1,59 @@
+require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const UserModel = require("./model/user");
+const bcrypt = require("bcryptjs");
+const path = require("path");
+const dotenv = require("dotenv");
+
+mongoose.connect("mongodb://localhost:27017/user-mgmt-db", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
 const app = express();
-const port = 3000;
 
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
+app.use("/", express.static(path.join(__dirname, "static")));
+
+app.post("/auth/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const isUserExist = await UserModel.findOne({ email });
+  if (!isUserExist) {
+    return res.status(401).json({
+      message: "Invalid email/password",
+    });
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(
+    password,
+    isUserExist.password
+  );
+
+  if (!isPasswordCorrect) {
+    return res.status(401).json({
+      message: "Invalid email/password",
+    });
+  } else {
+    const token = jwt.sign(
+      {
+        id: isUserExist._id,
+        email: isUserExist.email,
+      },
+      process.env.JWT_SECRET || "secret",
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    return res.status(200).json({
+      message: "Login successful",
+      token: token,
+    });
+  }
 });
 
-app.get("/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.put("/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.delete("/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-
-// users
-app.get("/users", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.get("/users/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.put("/users/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.delete("/users/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-
-// users courses
-app.get("/users/:id/courses", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.get("/users/:id/courses/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.put("/users/:id/courses/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.delete("/users/:id/courses/:id", (req, res) => {
-  res.send("Hello, World!");
-});
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server is listening on ${process.env.PORT}`);
 });
