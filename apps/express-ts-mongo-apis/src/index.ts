@@ -14,13 +14,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 mongoose.Promise = Promise;
-mongoose.connect(process.env.MONGO_URL);
+mongoose.connect(
+  process.env.MONGO_URL || "mongodb://localhost:27017/usermgmtdb"
+);
 mongoose.connection.on("error", (err: Error) => {
   console.error(`MongoDB connection error: ${err}`);
 });
 
 app.use("/api", router);
-
-app.listen(process.env.PORT || 8181, () => {
-  console.log(`Server is running on port ${process.env.PORT} || 8181`);
-});
